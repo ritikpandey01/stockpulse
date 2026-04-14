@@ -1,5 +1,6 @@
+// ========== Auth Logic (Sidebar-compatible) ==========
 let authMode = 'login';
-const ADMIN_EMAILS = ['admin@stockpulse.com']; // Sync with backend
+const ADMIN_EMAILS = ['ritikpandey.4161@gmail.com'];
 
 function openAuthModal() {
     document.getElementById('auth-modal').classList.remove('hidden');
@@ -23,16 +24,15 @@ async function handleAuth(e) {
     const email = document.getElementById('auth-email').value;
     const password = document.getElementById('auth-password').value;
     const errDiv = document.getElementById('auth-error');
-    
+
     try {
         const res = await api.post(`/auth/${authMode}`, { email, password });
-        
         if (res.access_token) {
             localStorage.setItem('supabase_token', res.access_token);
             closeAuthModal();
             checkAuth();
         } else {
-            errDiv.innerText = "Error: Please check your credentials or Supabase configuration";
+            errDiv.innerText = "Error: check credentials or Supabase config";
             errDiv.classList.remove('hidden');
         }
     } catch (err) {
@@ -44,18 +44,18 @@ async function handleAuth(e) {
 function logout() {
     localStorage.removeItem('supabase_token');
     checkAuth();
-    navigate('home');
+    navigate('dashboard');
 }
 
 async function checkAuth() {
     const token = localStorage.getItem('supabase_token');
-    const loggedOutDiv = document.getElementById('user-area-logged-out');
-    const loggedInDiv = document.getElementById('user-area-logged-in');
+    const loggedOut = document.getElementById('sidebar-logged-out');
+    const loggedIn = document.getElementById('sidebar-logged-in');
     const adminLink = document.getElementById('admin-link');
-    
+
     if (!token) {
-        loggedOutDiv.classList.remove('hidden');
-        loggedInDiv.classList.add('hidden');
+        loggedOut.classList.remove('hidden');
+        loggedIn.classList.add('hidden');
         adminLink.style.display = 'none';
         return;
     }
@@ -63,13 +63,13 @@ async function checkAuth() {
     try {
         const user = await api.get('/auth/me');
         if (user.email) {
-            document.getElementById('user-email').innerText = user.email;
-            loggedOutDiv.classList.add('hidden');
-            loggedInDiv.classList.remove('hidden');
-            
-            // Show admin link if admin
+            document.getElementById('user-email-display').innerText = user.email;
+            document.getElementById('user-avatar').innerText = user.email[0].toUpperCase();
+            loggedOut.classList.add('hidden');
+            loggedIn.classList.remove('hidden');
+
             if (ADMIN_EMAILS.includes(user.email)) {
-                adminLink.style.display = 'block';
+                adminLink.style.display = 'flex';
             } else {
                 adminLink.style.display = 'none';
             }

@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StockPulse — AI-Powered Stock Analysis</title>
-    <meta name="description" content="Premium AI-powered stock analysis platform with price prediction, risk scoring, news sentiment, and real-time recommendations.">
+    <title>StockPulse — AI-Powered Stock Analysis Platform</title>
+    <meta name="description" content="Complete AI-powered stock analysis platform with unified predictions, risk scoring, technical analysis, screener, and market intelligence.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -15,8 +15,12 @@
     <!-- Auth Modal -->
     <div id="auth-modal" class="modal hidden">
         <div class="modal-backdrop" onclick="closeAuthModal()"></div>
-        <div class="modal-content glass-card">
+        <div class="modal-content">
             <button class="modal-close" onclick="closeAuthModal()">&times;</button>
+            <div style="text-align:center; margin-bottom:1.5rem;">
+                <span style="font-size:2rem">⚡</span>
+                <h2 style="margin-top:0.5rem">Welcome to StockPulse</h2>
+            </div>
             <div class="auth-tabs">
                 <button class="auth-tab active" onclick="switchAuthTab('login')">Login</button>
                 <button class="auth-tab" onclick="switchAuthTab('signup')">Sign Up</button>
@@ -36,220 +40,344 @@
         </div>
     </div>
 
-    <!-- Navigation -->
-    <nav class="navbar">
-        <div class="nav-brand" onclick="navigate('home')">
-            <span class="brand-icon">⚡</span>
-            <span class="brand-text">Stock<span class="accent">Pulse</span></span>
-        </div>
-        <div class="nav-links">
-            <a onclick="navigate('home')" class="nav-link active" data-page="home">Dashboard</a>
-            <a onclick="navigate('analyze')" class="nav-link" data-page="analyze">Analyze</a>
-            <a onclick="navigate('admin')" class="nav-link" data-page="admin" id="admin-link" style="display:none">Admin</a>
-        </div>
-        <div class="nav-actions">
-            <div id="user-area-logged-out">
-                <button class="btn btn-outline" onclick="openAuthModal()">Login</button>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand" onclick="navigate('dashboard')">
+                <span class="brand-icon">⚡</span>
+                <span class="brand-text">Stock<span class="accent">Pulse</span></span>
             </div>
-            <div id="user-area-logged-in" class="hidden">
-                <span id="user-email" class="user-badge"></span>
-                <button class="btn btn-outline btn-sm" onclick="logout()">Logout</button>
-            </div>
-        </div>
-    </nav>
 
-    <!-- Main Content -->
-    <main id="app-content">
-        <!-- HOME PAGE -->
-        <div id="page-home" class="page active">
-            <!-- Hero -->
-            <section class="hero">
-                <div class="hero-bg-glow"></div>
-                <h1 class="hero-title">AI-Powered <span class="gradient-text">Stock Intelligence</span></h1>
-                <p class="hero-subtitle">Real-time analysis, predictive insights, and smart recommendations — all in one platform.</p>
-                <div class="search-container">
-                    <div class="search-box">
+            <nav class="sidebar-nav">
+                <div class="sidebar-section-label">Overview</div>
+                <a class="nav-item active" data-page="dashboard" onclick="navigate('dashboard')">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-text">Dashboard</span>
+                </a>
+                <a class="nav-item" data-page="analyze" onclick="navigate('analyze')">
+                    <span class="nav-icon">🔍</span>
+                    <span class="nav-text">Analyze</span>
+                </a>
+
+                <div class="sidebar-section-label">Tools</div>
+                <a class="nav-item" data-page="screener" onclick="navigate('screener')">
+                    <span class="nav-icon">🎯</span>
+                    <span class="nav-text">Screener</span>
+                </a>
+                <a class="nav-item" data-page="compare" onclick="navigate('compare')">
+                    <span class="nav-icon">⚖️</span>
+                    <span class="nav-text">Compare</span>
+                </a>
+
+                <div class="sidebar-section-label">Account</div>
+                <a class="nav-item" data-page="admin" onclick="navigate('admin')" id="admin-link" style="display:none">
+                    <span class="nav-icon">👑</span>
+                    <span class="nav-text">Admin</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div id="sidebar-logged-out">
+                    <button class="btn btn-outline btn-full btn-sm" onclick="openAuthModal()">🔐 Login</button>
+                </div>
+                <div id="sidebar-logged-in" class="hidden">
+                    <div class="sidebar-user">
+                        <span class="user-avatar" id="user-avatar">U</span>
+                        <span id="user-email-display" class="text-sm" style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></span>
+                    </div>
+                    <button class="btn btn-ghost btn-full btn-sm" onclick="logout()" style="margin-top:0.5rem; color:var(--text-dim);">Logout</button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <header class="main-header">
+                <h1 class="header-title" id="page-title">Dashboard</h1>
+                <div class="header-actions">
+                    <div class="search-box" style="border-radius:8px; padding:0.3rem;">
                         <span class="search-icon">🔍</span>
-                        <input type="text" id="hero-search" placeholder="Enter stock symbol (e.g., AAPL, TSLA, NVDA)" autocomplete="off">
-                        <button class="btn btn-primary" onclick="searchFromHero()">Analyze</button>
+                        <input type="text" id="global-search" placeholder="Quick search..." style="font-size:0.85rem; min-width:120px;" autocomplete="off">
                     </div>
                 </div>
-            </section>
+            </header>
 
-            <!-- Recommendations -->
-            <section class="section">
-                <div class="section-header">
-                    <h2>🔥 Today's Top Picks</h2>
-                    <button class="btn btn-outline btn-sm" onclick="loadRecommendations()" id="refresh-recs-btn">Refresh</button>
-                </div>
-                <div id="recommendations-grid" class="stock-grid">
-                    <div class="loading-skeleton"></div>
-                </div>
-            </section>
-
-            <!-- Sector Movers -->
-            <section class="section">
-                <h2>📊 Sector Performance</h2>
-                <div id="sector-movers" class="sector-grid">
-                    <div class="loading-skeleton"></div>
-                </div>
-            </section>
-        </div>
-
-        <!-- ANALYZE PAGE -->
-        <div id="page-analyze" class="page">
-            <div class="analyze-header">
-                <div class="search-box compact">
-                    <span class="search-icon">🔍</span>
-                    <input type="text" id="analyze-search" placeholder="Stock symbol..." autocomplete="off">
-
-                    <div class="select-group">
-                        <label class="select-label" for="period-select">📅 History</label>
-                        <select id="period-select" class="select-styled">
-                            <option value="5d">5 Days</option>
-                            <option value="1mo" selected>1 Month</option>
-                            <option value="3mo">3 Months</option>
-                            <option value="6mo">6 Months</option>
-                            <option value="1y">1 Year</option>
-                        </select>
-                    </div>
-
-                    <div class="select-group">
-                        <label class="select-label" for="interval-select">⏱️ Interval</label>
-                        <select id="interval-select" class="select-styled">
-                            <option value="5m">5 Min</option>
-                            <option value="15m">15 Min</option>
-                            <option value="1h">1 Hour</option>
-                            <option value="1d" selected>1 Day</option>
-                        </select>
-                    </div>
-
-                    <button class="btn btn-primary" onclick="runAnalysis()">Analyze</button>
-                </div>
-                <div class="select-help-text">
-                    <span>📅 <strong>History</strong> = how far back to look &nbsp;|&nbsp; ⏱️ <strong>Interval</strong> = candle size on chart</span>
-                </div>
-            </div>
-
-            <!-- Loading state -->
-            <div id="analyze-loading" class="loading-section hidden">
-                <div class="pulse-loader"></div>
-                <p class="loading-text">Fetching market data and indicators...</p>
-            </div>
-
-            <!-- Results -->
-            <div id="analyze-results" class="hidden">
-                <!-- Stock Header -->
-                <div id="stock-header" class="stock-header glass-card"></div>
-
-                <!-- Tabs -->
-                <div class="tab-bar">
-                    <button class="tab active" onclick="switchTab('chart')" data-tab="chart">📈 Chart</button>
-                    <button class="tab" onclick="switchTab('indicators')" data-tab="indicators">📊 Indicators</button>
-                    <button class="tab" onclick="switchTab('signals')" data-tab="signals">💹 Signals</button>
-                    <button class="tab" onclick="switchTab('prediction')" data-tab="prediction">🔮 Prediction</button>
-                    <button class="tab" onclick="switchTab('risk')" data-tab="risk">⚠️ Risk</button>
-                    <button class="tab" onclick="switchTab('sentiment')" data-tab="sentiment">📰 Sentiment</button>
-                </div>
-
-                <!-- Tab Panels -->
-                <div id="tab-chart" class="tab-panel active">
-                    <div class="glass-card">
-                        <div id="chart-container" style="height:450px;"></div>
-                    </div>
-                    <div class="metrics-row" id="support-resistance"></div>
-                </div>
-
-                <div id="tab-indicators" class="tab-panel">
-                    <div id="indicators-content">
-                        <div class="indicators-grid">
-                            <div class="glass-card indicator-card">
-                                <h3>RSI <span class="indicator-badge" id="rsi-badge">—</span></h3>
-                                <div id="rsi-chart" class="mini-chart"></div>
-                            </div>
-                            <div class="glass-card indicator-card">
-                                <h3>MACD</h3>
-                                <div id="macd-chart" class="mini-chart"></div>
-                            </div>
-                            <div class="glass-card indicator-card">
-                                <h3>Bollinger Bands</h3>
-                                <div id="bb-chart" class="mini-chart"></div>
-                            </div>
-                            <div class="glass-card indicator-card">
-                                <h3>Volume & OBV</h3>
-                                <div id="obv-chart" class="mini-chart"></div>
+            <div class="main-body">
+                <!-- ========== DASHBOARD PAGE ========== -->
+                <div id="page-dashboard" class="page active">
+                    <!-- Hero -->
+                    <section class="hero">
+                        <div class="hero-bg-glow"></div>
+                        <h1 class="hero-title">AI-Powered <span class="gradient-text">Stock Intelligence</span></h1>
+                        <p class="hero-subtitle">Unified analysis, predictive insights, and smart recommendations — all in one platform.</p>
+                        <div class="search-container">
+                            <div class="search-box">
+                                <span class="search-icon">🔍</span>
+                                <input type="text" id="hero-search" placeholder="Enter stock symbol (e.g. AAPL, TSLA, NVDA)" autocomplete="off">
+                                <button class="btn btn-primary" onclick="searchFromHero()">Analyze</button>
                             </div>
                         </div>
-                    </div>
-                </div>
+                    </section>
 
-                <div id="tab-prediction" class="tab-panel">
-                    <div id="prediction-content">
-                        <div class="ml-loading-card glass-card">
-                            <div class="step-loader">
-                                <div class="step-item active" id="ml-step-1">
-                                    <div class="step-dot"></div>
-                                    <span>Fetching extended history...</span>
-                                </div>
-                                <div class="step-item" id="ml-step-2">
-                                    <div class="step-dot"></div>
-                                    <span>Training ML models...</span>
-                                </div>
-                                <div class="step-item" id="ml-step-3">
-                                    <div class="step-dot"></div>
-                                    <span>Generating predictions...</span>
+                    <!-- Market Indices -->
+                    <section class="section" id="market-indices-section">
+                        <div class="section-header">
+                            <h2>🌍 Market Overview</h2>
+                            <button class="btn btn-ghost btn-sm" onclick="loadMarketOverview()">↻ Refresh</button>
+                        </div>
+                        <div id="indices-grid" class="indices-grid">
+                            <div class="loading-skeleton"></div>
+                        </div>
+                    </section>
+
+                    <!-- Fear & Greed + Sector Heatmap -->
+                    <section class="section">
+                        <div style="display:grid; grid-template-columns: 1fr 2fr; gap:1.5rem;">
+                            <div id="fear-greed-container" class="glass-card fear-greed-card">
+                                <div class="loading-skeleton" style="height:200px;"></div>
+                            </div>
+                            <div>
+                                <h2 style="margin-bottom:1rem;">📊 Sector Heatmap</h2>
+                                <div id="sector-heatmap" class="heatmap-grid">
+                                    <div class="loading-skeleton"></div>
                                 </div>
                             </div>
-                            <p class="text-muted" style="margin-top:1.5rem">💡 Tip: Check out the <strong>Indicators</strong> tab while our models train!</p>
                         </div>
-                    </div>
+                    </section>
+
+                    <!-- Top Picks -->
+                    <section class="section">
+                        <div class="section-header">
+                            <h2>🔥 Today's Top Picks</h2>
+                            <button class="btn btn-ghost btn-sm" onclick="loadRecommendations(true)" id="refresh-recs-btn">↻ Refresh</button>
+                        </div>
+                        <div id="recommendations-grid" class="stock-grid">
+                            <div class="loading-skeleton"></div>
+                        </div>
+                    </section>
                 </div>
 
-                <div id="tab-risk" class="tab-panel">
-                    <div id="risk-content">
-                        <div class="ml-loading-card glass-card">
-                            <div class="step-loader">
-                                <div class="step-item active">
-                                    <div class="step-dot"></div>
-                                    <span>Training ensemble risk models...</span>
-                                </div>
+                <!-- ========== ANALYZE PAGE ========== -->
+                <div id="page-analyze" class="page">
+                    <div class="analyze-header">
+                        <div class="search-box compact">
+                            <span class="search-icon">🔍</span>
+                            <input type="text" id="analyze-search" placeholder="Stock symbol..." autocomplete="off">
+                            <div class="select-group">
+                                <label class="select-label" for="period-select">📅 History</label>
+                                <select id="period-select" class="select-styled">
+                                    <option value="5d">5 Days</option>
+                                    <option value="1mo" selected>1 Month</option>
+                                    <option value="3mo">3 Months</option>
+                                    <option value="6mo">6 Months</option>
+                                    <option value="1y">1 Year</option>
+                                </select>
                             </div>
-                            <p class="text-muted" style="margin-top:1.5rem">💡 Tip: Explore <strong>Signals</strong> and <strong>Indicators</strong> while this loads!</p>
+                            <div class="select-group">
+                                <label class="select-label" for="interval-select">⏱ Interval</label>
+                                <select id="interval-select" class="select-styled">
+                                    <option value="5m">5 Min</option>
+                                    <option value="15m">15 Min</option>
+                                    <option value="1h">1 Hour</option>
+                                    <option value="1d" selected>1 Day</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary" onclick="runAnalysis()">Analyze</button>
+                        </div>
+                        <div class="select-help-text">
+                            <span>📅 <strong>History</strong> = how far back &nbsp;|&nbsp; ⏱ <strong>Interval</strong> = candle size</span>
                         </div>
                     </div>
-                </div>
 
-                <div id="tab-signals" class="tab-panel">
-                    <div id="signals-content"></div>
-                </div>
-
-                <div id="tab-sentiment" class="tab-panel">
-                    <div id="sentiment-loading" class="loading-section">
+                    <!-- Loading -->
+                    <div id="analyze-loading" class="loading-section hidden">
                         <div class="pulse-loader"></div>
-                        <p class="loading-text">Analyzing news sentiment...</p>
+                        <p class="loading-text">Fetching market data and indicators...</p>
                     </div>
-                    <div id="sentiment-content" class="hidden"></div>
+
+                    <!-- Results -->
+                    <div id="analyze-results" class="hidden">
+                        <div id="stock-header" class="stock-header glass-card"></div>
+
+                        <!-- ===== UNIFIED VERDICT (always visible) ===== -->
+                        <div id="unified-verdict-section" class="verdict-section"></div>
+
+                        <!-- Tabs (5 tabs — down from 8) -->
+                        <div class="tab-bar">
+                            <button class="tab active" onclick="switchTab('chart')" data-tab="chart">📈 Chart</button>
+                            <button class="tab" onclick="switchTab('technical')" data-tab="technical">📊 Technical</button>
+                            <button class="tab" onclick="switchTab('prediction')" data-tab="prediction">🔮 Prediction</button>
+                            <button class="tab" onclick="switchTab('fundamentals')" data-tab="fundamentals">🏛 Fundamentals</button>
+                            <button class="tab" onclick="switchTab('data')" data-tab="data">📋 Data & Stats</button>
+                        </div>
+
+                        <!-- Tab Panels -->
+                        <div id="tab-chart" class="tab-panel active">
+                            <div class="glass-card">
+                                <div id="chart-container" style="height:450px;"></div>
+                            </div>
+                            <div class="metrics-row" id="support-resistance"></div>
+                        </div>
+
+                        <div id="tab-technical" class="tab-panel">
+                            <div id="technical-content">
+                                <!-- Indicator Charts -->
+                                <div class="indicators-grid">
+                                    <div class="glass-card indicator-card">
+                                        <h3>RSI <span class="indicator-badge" id="rsi-badge">—</span></h3>
+                                        <div id="rsi-chart" class="mini-chart"></div>
+                                    </div>
+                                    <div class="glass-card indicator-card">
+                                        <h3>MACD</h3>
+                                        <div id="macd-chart" class="mini-chart"></div>
+                                    </div>
+                                    <div class="glass-card indicator-card">
+                                        <h3>Bollinger Bands</h3>
+                                        <div id="bb-chart" class="mini-chart"></div>
+                                    </div>
+                                    <div class="glass-card indicator-card">
+                                        <h3>Volume & OBV</h3>
+                                        <div id="obv-chart" class="mini-chart"></div>
+                                    </div>
+                                </div>
+                                <!-- Signals detail rendered here -->
+                                <div id="signals-detail" style="margin-top:1.5rem;"></div>
+                            </div>
+                        </div>
+
+                        <div id="tab-prediction" class="tab-panel">
+                            <div id="prediction-content">
+                                <div class="ml-loading-card glass-card">
+                                    <div class="step-loader">
+                                        <div class="step-item active" id="ml-step-1"><div class="step-dot"></div><span>Fetching extended history...</span></div>
+                                        <div class="step-item" id="ml-step-2"><div class="step-dot"></div><span>Training ML models...</span></div>
+                                        <div class="step-item" id="ml-step-3"><div class="step-dot"></div><span>Generating predictions...</span></div>
+                                    </div>
+                                    <p class="text-muted" style="margin-top:1.5rem">💡 Tip: Check out the <strong>Technical</strong> tab while our models train!</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="tab-fundamentals" class="tab-panel">
+                            <div id="fundamentals-loading" class="loading-section">
+                                <div class="pulse-loader"></div>
+                                <p class="loading-text">Fetching fundamental data...</p>
+                            </div>
+                            <div id="fundamentals-content" class="hidden"></div>
+                        </div>
+
+                        <div id="tab-data" class="tab-panel">
+                            <div id="data-loading" class="loading-section">
+                                <div class="pulse-loader"></div>
+                                <p class="loading-text">Loading data & statistics...</p>
+                            </div>
+                            <div id="data-content" class="hidden"></div>
+                        </div>
+
+                        <div class="glass-card" id="performance-metrics" style="margin-top:1.5rem;"></div>
+                    </div>
                 </div>
 
-                <!-- Performance -->
-                <div class="glass-card" id="performance-metrics"></div>
-            </div>
-        </div>
+                <!-- ========== SCREENER PAGE ========== -->
+                <div id="page-screener" class="page">
+                    <div class="glass-card" style="margin-bottom:1.5rem;">
+                        <h3 style="margin-bottom:1rem;">Filter Stocks</h3>
+                        <div class="screener-filters">
+                            <div class="filter-group">
+                                <label>Sector</label>
+                                <select id="scr-sector">
+                                    <option value="">All Sectors</option>
+                                    <option value="Technology">Technology</option>
+                                    <option value="Healthcare">Healthcare</option>
+                                    <option value="Financial">Financial</option>
+                                    <option value="Consumer">Consumer</option>
+                                    <option value="Energy">Energy</option>
+                                    <option value="Industrial">Industrial</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label>Min Price ($)</label>
+                                <input type="number" id="scr-min-price" placeholder="0">
+                            </div>
+                            <div class="filter-group">
+                                <label>Max Price ($)</label>
+                                <input type="number" id="scr-max-price" placeholder="Any">
+                            </div>
+                            <div class="filter-group">
+                                <label>Min RSI</label>
+                                <input type="number" id="scr-min-rsi" placeholder="0" min="0" max="100">
+                            </div>
+                            <div class="filter-group">
+                                <label>Max RSI</label>
+                                <input type="number" id="scr-max-rsi" placeholder="100" min="0" max="100">
+                            </div>
+                            <div class="filter-group">
+                                <label>Signal</label>
+                                <select id="scr-signal">
+                                    <option value="">Any</option>
+                                    <option value="Buy">Buy</option>
+                                    <option value="Sell">Sell</option>
+                                    <option value="Neutral">Neutral</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label>Sort By</label>
+                                <select id="scr-sort">
+                                    <option value="score">Score</option>
+                                    <option value="return_5d">5D Return</option>
+                                    <option value="market_cap">Market Cap</option>
+                                    <option value="rsi">RSI</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary" onclick="runScreener()">🎯 Screen</button>
+                        </div>
+                    </div>
+                    <div id="screener-results">
+                        <p class="text-muted text-center" style="padding:3rem;">Configure filters above and click <strong>Screen</strong> to find stocks matching your criteria.</p>
+                    </div>
+                </div>
 
-        <!-- ADMIN PAGE -->
-        <div id="page-admin" class="page">
-            <h1 class="page-title">📊 Prediction Accuracy Dashboard</h1>
-            <div id="admin-content">
-                <div class="loading-skeleton"></div>
-            </div>
-        </div>
-    </main>
+                <!-- ========== COMPARE PAGE ========== -->
+                <div id="page-compare" class="page">
+                    <div class="glass-card" style="margin-bottom:1.5rem;">
+                        <h3 style="margin-bottom:1rem;">Compare Stocks</h3>
+                        <div class="compare-input">
+                            <input type="text" id="cmp-sym1" placeholder="AAPL" value="AAPL">
+                            <span class="text-dim">vs</span>
+                            <input type="text" id="cmp-sym2" placeholder="MSFT" value="MSFT">
+                            <span class="text-dim">vs</span>
+                            <input type="text" id="cmp-sym3" placeholder="GOOGL (optional)">
+                            <div class="select-group">
+                                <label class="select-label">Period</label>
+                                <select id="cmp-period" class="select-styled">
+                                    <option value="1mo">1 Month</option>
+                                    <option value="3mo" selected>3 Months</option>
+                                    <option value="6mo">6 Months</option>
+                                    <option value="1y">1 Year</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary" onclick="runComparison()">⚖️ Compare</button>
+                        </div>
+                    </div>
+                    <div id="compare-results">
+                        <p class="text-muted text-center" style="padding:3rem;">Enter 2-5 stock symbols above and click <strong>Compare</strong> to see side-by-side analysis.</p>
+                    </div>
+                </div>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <p>⚡ StockPulse — AI-Powered Stock Analysis | Built with FastAPI + Vanilla JS</p>
-        <p class="footer-disclaimer">⚠️ Not financial advice. Always do your own research before investing.</p>
-    </footer>
+                <!-- ========== ADMIN PAGE ========== -->
+                <div id="page-admin" class="page">
+                    <div id="admin-content">
+                        <div class="loading-skeleton"></div>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="footer">
+                <p>⚡ StockPulse v3.0 — AI-Powered Unified Stock Analysis Platform</p>
+                <p class="footer-disclaimer">⚠️ Not financial advice. Always do your own research before investing.</p>
+            </footer>
+        </div>
+    </div>
 
     <script src="/js/api.js"></script>
     <script src="/js/charts.js"></script>

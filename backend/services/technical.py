@@ -192,3 +192,144 @@ def get_performance_metrics(df: pd.DataFrame) -> dict:
         "sharpe_ratio": round(sharpe, 2),
         "max_drawdown": round(max_dd * 100, 2),
     }
+
+
+def get_returns_distribution(df: pd.DataFrame) -> dict:
+    """Calculate returns distribution data for histogram chart."""
+    returns = df['Close'].pct_change().dropna() * 100  # percentage
+    if len(returns) < 5:
+        return {"bins": [], "counts": [], "mean": 0, "std": 0}
+
+    counts, bin_edges = np.histogram(returns, bins=30)
+    bins = [(round(float(bin_edges[i]), 3), round(float(bin_edges[i + 1]), 3)) for i in range(len(counts))]
+
+    return {
+        "bins": bins,
+        "counts": [int(c) for c in counts],
+        "mean": round(float(returns.mean()), 4),
+        "std": round(float(returns.std()), 4),
+        "skewness": round(float(returns.skew()), 4),
+        "kurtosis": round(float(returns.kurtosis()), 4),
+        "min": round(float(returns.min()), 4),
+        "max": round(float(returns.max()), 4),
+    }
+
+
+def get_descriptive_stats(df: pd.DataFrame) -> dict:
+    """Calculate descriptive statistics for the stock data."""
+    close = df['Close']
+    volume = df['Volume']
+    returns = close.pct_change().dropna()
+
+    return {
+        "price": {
+            "current": round(float(close.iloc[-1]), 2),
+            "mean": round(float(close.mean()), 2),
+            "median": round(float(close.median()), 2),
+            "std": round(float(close.std()), 2),
+            "min": round(float(close.min()), 2),
+            "max": round(float(close.max()), 2),
+            "range": round(float(close.max() - close.min()), 2),
+        },
+        "returns": {
+            "mean_daily": round(float(returns.mean() * 100), 4),
+            "std_daily": round(float(returns.std() * 100), 4),
+            "best_day": round(float(returns.max() * 100), 2),
+            "worst_day": round(float(returns.min() * 100), 2),
+            "positive_days": int((returns > 0).sum()),
+            "negative_days": int((returns < 0).sum()),
+            "win_rate": round(float((returns > 0).sum() / len(returns) * 100), 1) if len(returns) > 0 else 0,
+        },
+        "volume": {
+            "mean": int(volume.mean()),
+            "median": int(volume.median()),
+            "max": int(volume.max()),
+            "min": int(volume.min()),
+        },
+        "data_points": len(df),
+        "date_range": {
+            "start": str(df['Date'].iloc[0].date()) if 'Date' in df.columns else "N/A",
+            "end": str(df['Date'].iloc[-1].date()) if 'Date' in df.columns else "N/A",
+        }
+    }
+
+
+def get_advanced_risk_metrics(df: pd.DataFrame, benchmark_symbol: str = "^GSPC") -> dict:
+    """Calculate advanced risk metrics: VaR, Sortino, Calmar, Beta, etc."""
+    returns = df['Close'].pct_change().dropna()
+    if len(returns) < 10:
+        return {"error": "Insufficient data for risk metrics"}
+
+    # Value at Risk (Historical)
+    var_95 = round(float(np.percentile(returns, 5) * 100), 2)
+    var_99 = round(float(np.percentile(returns, 1) * 100), 2)
+
+    # Sortino Ratio (downside deviation)
+    downside = returns[returns < 0]
+    downside_std = float(downside.std() * np.sqrt(252)) if len(downside) > 0 else 0.001
+    sortino = round(float((returns.mean() * 252) / downside_std), 2) if downside_std > 0 else 0
+
+    # Calmar Ratio
+    ann_return = float(returns.mean() * 252)
+    max_dd = float((df['Close'] / df['Close'].cummax() - 1).min())
+    calmar = round(ann_return / abs(max_dd), 2) if abs(max_dd) > 0.001 else 0
+
+    # Beta vs benchmark
+    beta = None
+    try:
+        import yfinance as yf
+        bench = yf.download(benchmark_symbol, period="6mo", interval="1d", progress=False)
+        if not bench.empty:
+            bench_col = bench.columns
+            if hasattr(bench_col, 'to_flat_index'):
+                bench.columns = ['_'.join(col).strip() for col in bench.columns.to_flat_index()]
+            bench.reset_index(inplace=True)
+            # Find close column
+            close_col = [c for c in bench.columns if 'close' in c.lower()]
+            if close_col:
+                bench_returns = bench[close_col[0]].pct_change().dropna()
+                min_len = min(len(returns), len(bench_returns))
+                if min_len > 10:
+                    stock_r = returns.iloc[-min_len:].values
+                    bench_r = bench_returns.iloc[-min_len:].values
+                    cov = np.cov(stock_r, bench_r)
+                    beta = round(float(cov[0, 1] / cov[1, 1]), 2) if cov[1, 1] > 0 else None
+    except Exception as e:
+        logger.warning(f"Beta calculation failed: {e}")
+
+    # Volatility cone (annualized vol at different windows)
+    vol_cone = {}
+    for window in [5, 10, 21, 63]:
+        if len(returns) >= window:
+            rolling_vol = returns.rolling(window).std() * np.sqrt(252)
+            vol_cone[f"{window}d"] = {
+                "current": round(float(rolling_vol.iloc[-1] * 100), 2) if pd.notna(rolling_vol.iloc[-1]) else None,
+                "mean": round(float(rolling_vol.mean() * 100), 2),
+                "min": round(float(rolling_vol.min() * 100), 2),
+                "max": round(float(rolling_vol.max() * 100), 2),
+            }
+
+    return {
+        "var_95": var_95,
+        "var_99": var_99,
+        "sortino_ratio": sortino,
+        "calmar_ratio": calmar,
+        "beta": beta,
+        "volatility_cone": vol_cone,
+        "ann_return_pct": round(ann_return * 100, 2),
+    }
+
+
+def get_drawdown_series(df: pd.DataFrame) -> list:
+    """Calculate drawdown time series for charting."""
+    cummax = df['Close'].cummax()
+    drawdown = ((df['Close'] - cummax) / cummax) * 100
+
+    result = []
+    for i, (_, row) in enumerate(df.iterrows()):
+        if 'Date' in df.columns:
+            result.append({
+                "time": int(row['Date'].timestamp()),
+                "value": round(float(drawdown.iloc[i]), 2),
+            })
+    return result

@@ -1,9 +1,16 @@
 // ========== Main Chart ==========
 window.renderChart = function(containerId, chartData) {
-    const container = document.getElementById(containerId);
-    container.innerHTML = '';
+    try {
+        const container = document.getElementById(containerId);
+        container.innerHTML = '';
 
-    if (!chartData || chartData.length === 0) return;
+        if (!chartData || chartData.length === 0) return;
+
+        // Ensure unique and ascending timestamps
+        chartData = Array.from(new Map(chartData.filter(d => d && d.time).map(item => [item.time, item])).values())
+            .sort((a, b) => a.time - b.time);
+
+        if (chartData.length === 0) return;
 
     const chartProperties = {
         layout: {
@@ -56,7 +63,6 @@ window.renderChart = function(containerId, chartData) {
 
     volumeSeries.setData(volumeData);
 
-    // Resize handler
     new ResizeObserver(entries => {
         if (entries.length === 0 || entries[0].target !== container) return;
         const newRect = entries[0].contentRect;
@@ -64,12 +70,16 @@ window.renderChart = function(containerId, chartData) {
     }).observe(container);
 
     chart.timeScale().fitContent();
+    } catch (e) {
+        console.error("Main chart rendering failed:", e);
+    }
 };
 
 
 // ========== Indicator Mini-Charts ==========
 window.renderIndicatorCharts = function(indicatorData) {
-    if (!indicatorData || indicatorData.length === 0) return;
+    try {
+        if (!indicatorData || indicatorData.length === 0) return;
 
     const miniChartOpts = {
         layout: { background: { type: 'solid', color: 'transparent' }, textColor: '#64748B', fontSize: 10 },
@@ -81,8 +91,11 @@ window.renderIndicatorCharts = function(indicatorData) {
         handleScale: false,
     };
 
-    // Filter out entries missing data
-    const clean = indicatorData.filter(d => d.time);
+
+
+    // Filter out entries missing data and deduplicate
+    const clean = Array.from(new Map(indicatorData.filter(d => d.time).map(item => [item.time, item])).values())
+        .sort((a, b) => a.time - b.time);
 
     // ---- RSI Chart ----
     const rsiContainer = document.getElementById('rsi-chart');
@@ -161,5 +174,8 @@ window.renderIndicatorCharts = function(indicatorData) {
         });
         obvArea.setData(obvData);
         obvChart.timeScale().fitContent();
+    }
+    } catch (e) {
+        console.error("Indicator charts rendering failed:", e);
     }
 };

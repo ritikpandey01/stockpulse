@@ -100,7 +100,11 @@ window.renderIndicatorCharts = function(indicatorData) {
     // ---- RSI Chart ----
     const rsiContainer = document.getElementById('rsi-chart');
     rsiContainer.innerHTML = '';
-    const rsiChart = LightweightCharts.createChart(rsiContainer, miniChartOpts);
+    
+    // Pass fallback width/height because the Technical tab might be display: none (0x0 size) initially
+    const w = rsiContainer.clientWidth || 800;
+    const h = rsiContainer.clientHeight || 200;
+    const rsiChart = LightweightCharts.createChart(rsiContainer, { ...miniChartOpts, width: w, height: h });
 
     const rsiData = clean.filter(d => d.RSI !== undefined).map(d => ({ time: d.time, value: d.RSI }));
     if (rsiData.length > 0) {
@@ -127,7 +131,7 @@ window.renderIndicatorCharts = function(indicatorData) {
     // ---- MACD Chart ----
     const macdContainer = document.getElementById('macd-chart');
     macdContainer.innerHTML = '';
-    const macdChart = LightweightCharts.createChart(macdContainer, miniChartOpts);
+    const macdChart = LightweightCharts.createChart(macdContainer, { ...miniChartOpts, width: macdContainer.clientWidth || 800, height: macdContainer.clientHeight || 200 });
 
     const macdData = clean.filter(d => d.MACD !== undefined).map(d => ({ time: d.time, value: d.MACD }));
     if (macdData.length > 0) {
@@ -146,7 +150,7 @@ window.renderIndicatorCharts = function(indicatorData) {
     // ---- Bollinger Bands Chart ----
     const bbContainer = document.getElementById('bb-chart');
     bbContainer.innerHTML = '';
-    const bbChart = LightweightCharts.createChart(bbContainer, miniChartOpts);
+    const bbChart = LightweightCharts.createChart(bbContainer, { ...miniChartOpts, width: bbContainer.clientWidth || 800, height: bbContainer.clientHeight || 200 });
 
     const bbUpperData = clean.filter(d => d.BB_upper !== undefined).map(d => ({ time: d.time, value: d.BB_upper }));
     const bbMiddleData = clean.filter(d => d.BB_middle !== undefined).map(d => ({ time: d.time, value: d.BB_middle }));
@@ -162,7 +166,7 @@ window.renderIndicatorCharts = function(indicatorData) {
     // ---- OBV Chart ----
     const obvContainer = document.getElementById('obv-chart');
     obvContainer.innerHTML = '';
-    const obvChart = LightweightCharts.createChart(obvContainer, miniChartOpts);
+    const obvChart = LightweightCharts.createChart(obvContainer, { ...miniChartOpts, width: obvContainer.clientWidth || 800, height: obvContainer.clientHeight || 200 });
 
     const obvData = clean.filter(d => d.OBV !== undefined).map(d => ({ time: d.time, value: d.OBV }));
     if (obvData.length > 0) {
@@ -175,6 +179,28 @@ window.renderIndicatorCharts = function(indicatorData) {
         obvArea.setData(obvData);
         obvChart.timeScale().fitContent();
     }
+    
+    // Add ResizeObservers for all mini charts so they render correctly when unhidden
+    const miniCharts = [
+        { container: rsiContainer, chart: rsiChart },
+        { container: macdContainer, chart: macdChart },
+        { container: bbContainer, chart: bbChart },
+        { container: obvContainer, chart: obvChart }
+    ];
+    
+    miniCharts.forEach(({ container, chart }) => {
+        new ResizeObserver(entries => {
+            if (entries.length === 0 || entries[0].target !== container) return;
+            const newRect = entries[0].contentRect;
+            const w = container.clientWidth || newRect.width;
+            const h = container.clientHeight || newRect.height;
+            if (w > 0 && h > 0) {
+                chart.applyOptions({ height: h, width: w });
+                chart.timeScale().fitContent();
+            }
+        }).observe(container);
+    });
+
     } catch (e) {
         console.error("Indicator charts rendering failed:", e);
     }

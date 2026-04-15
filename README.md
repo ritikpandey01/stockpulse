@@ -268,9 +268,12 @@ stockpulse/
 │       ├── auth.js                # Login/signup modal, session management
 │       └── admin.js               # Admin accuracy dashboard renderer
 │
-├── supabase_schema.sql            # DB schema: predictions + search_history tables
-├── requirements.txt               # Python dependencies (15 packages)
-└── README.md                      # You are here
+├── README.md                      # You are here
+└── backend/
+    ├── requirements.txt           # Python dependencies (15 packages)
+    ├── supabase_schema.sql        # DB schema: predictions + search_history tables
+    ├── test.py                    # Test scripts
+    └── test_analyze.py            # Analysis testing
 ```
 
 ---
@@ -403,7 +406,7 @@ curl -X POST http://localhost:8000/api/analyze \
 
 ```bash
 git clone https://github.com/ritikpandey01/stockpulse.git
-cd stockpulse
+cd stockpulse/backend
 pip install -r requirements.txt
 ```
 
@@ -421,14 +424,14 @@ ADMIN_EMAILS=your-email@example.com
 
 ### 3. Set Up Database
 
-Run `supabase_schema.sql` in your Supabase SQL Editor to create:
+Run `supabase_schema.sql` (found in the `backend/` folder) in your Supabase SQL Editor to create:
 - `predictions` — stores ML predictions for accuracy tracking
 - `search_history` — logs user analysis history
 
 ### 4. Launch
 
 ```bash
-cd backend
+# Assuming you are already in the backend folder
 uvicorn main:app --reload --port 8000
 ```
 

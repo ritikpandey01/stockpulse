@@ -11,8 +11,14 @@ async def signup(email: str, password: str) -> dict:
         return {"error": "Database not configured. Please add Supabase credentials to .env"}
     try:
         result = sb.auth.sign_up({"email": email, "password": password})
-        if result.user:
-            return {"user_id": result.user.id, "email": result.user.email}
+        if result.session:
+            return {
+                "user_id": result.user.id,
+                "email": result.user.email,
+                "access_token": result.session.access_token,
+            }
+        elif result.user:
+            return {"message": "Signup successful! Please check your email to confirm, then Login."}
         return {"error": "Signup failed"}
     except Exception as e:
         return {"error": str(e)}

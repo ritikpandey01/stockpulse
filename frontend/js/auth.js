@@ -31,12 +31,18 @@ async function handleAuth(e) {
             localStorage.setItem('supabase_token', res.access_token);
             closeAuthModal();
             checkAuth();
+        } else if (res.message) {
+            errDiv.innerText = res.message;
+            errDiv.style.color = '#10B981'; // Green for success
+            errDiv.classList.remove('hidden');
         } else {
-            errDiv.innerText = "Error: check credentials or Supabase config";
+            errDiv.innerText = res.error || "Error: Check credentials or Supabase rate limits.";
+            errDiv.style.color = '#EF4444'; // Red for error
             errDiv.classList.remove('hidden');
         }
     } catch (err) {
-        errDiv.innerText = err.message;
+        errDiv.innerText = err.message || "Network error. Please try again later.";
+        errDiv.style.color = '#EF4444';
         errDiv.classList.remove('hidden');
     }
 }

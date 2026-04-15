@@ -10,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.production.js"></script>
     <link rel="stylesheet" href="/css/style.css">
+    <link rel="icon" href="data:,">
 </head>
 <body>
     <!-- Auth Modal -->
@@ -92,6 +93,14 @@
 
         <!-- Main Content -->
         <div class="main-content">
+            <!-- Global Loading Banner -->
+            <div id="global-loading-banner" class="global-loading-banner">
+                <div class="global-loading-inner">
+                    <div class="global-loading-spinner"></div>
+                    <span class="global-loading-text">⚡ Loading backend...</span>
+                </div>
+            </div>
+
             <header class="main-header">
                 <h1 class="header-title" id="page-title">Dashboard</h1>
                 <div class="header-actions">
@@ -379,10 +388,10 @@
         </div>
     </div>
 
-    <script src="/js/api.js"></script>
-    <script src="/js/charts.js"></script>
-    <script src="/js/auth.js"></script>
-    <script src="/js/admin.js"></script>
-    <script src="/js/app.js"></script>
+    <script src="/js/api.js?v=3"></script>
+    <script src="/js/charts.js?v=3"></script>
+    <script src="/js/auth.js?v=3"></script>
+    <script src="/js/admin.js?v=3"></script>
+    <script src="/js/app.js?v=3"></script>
 </body>
 </html>

@@ -1071,6 +1071,8 @@ function renderComparisonChart(containerId, series) {
     container.innerHTML = '';
 
     const chart = LightweightCharts.createChart(container, {
+        width: container.clientWidth || 800,
+        height: container.clientHeight || 400,
         layout: { background: { type: 'solid', color: 'transparent' }, textColor: '#7B8CA8' },
         grid: { vertLines: { color: 'rgba(255,255,255,0.03)' }, horzLines: { color: 'rgba(255,255,255,0.03)' } },
         rightPriceScale: { borderVisible: false },
@@ -1089,6 +1091,17 @@ function renderComparisonChart(containerId, series) {
         line.setData(data);
         i++;
     }
+
+    new ResizeObserver(entries => {
+        if (entries.length === 0 || entries[0].target !== container) return;
+        const newRect = entries[0].contentRect;
+        const w = container.clientWidth || newRect.width;
+        const h = container.clientHeight || newRect.height;
+        if (w > 0 && h > 0) {
+            chart.applyOptions({ height: h, width: w });
+            chart.timeScale().fitContent();
+        }
+    }).observe(container);
 
     chart.timeScale().fitContent();
 }
@@ -1126,6 +1139,33 @@ function removeTabSpinner(tabId) {
 // ========== INITIALIZATION ==========
 document.addEventListener('DOMContentLoaded', () => {
     checkAuth();
+
+    // Check if backend is awake (Render cold-start)
+    const connectBanner = document.getElementById('global-loading-banner');
+    if (connectBanner) {
+        api.get('/market/overview')
+            .then(() => {
+                connectBanner.classList.add('banner-hidden');
+                setTimeout(() => connectBanner.style.display = 'none', 300);
+            })
+            .catch(() => {
+                const textEl = connectBanner.querySelector('.global-loading-text');
+                if (textEl) textEl.textContent = '⚠️ Backend connection failed. Retrying...';
+                // Try once more after 5s
+                setTimeout(() => {
+                    api.get('/market/overview').then(() => {
+                        connectBanner.classList.add('banner-hidden');
+                        setTimeout(() => connectBanner.style.display = 'none', 300);
+                    }).catch(() => {
+                        if (textEl) textEl.textContent = '⚠️ Backend offline.';
+                        setTimeout(() => {
+                            connectBanner.classList.add('banner-hidden');
+                            setTimeout(() => connectBanner.style.display = 'none', 300);
+                        }, 3000);
+                    });
+                }, 5000);
+            });
+    }
 
     // Enter keys
     document.getElementById('hero-search').addEventListener('keydown', e => {

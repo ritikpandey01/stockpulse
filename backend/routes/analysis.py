@@ -31,8 +31,9 @@ async def analyze_stock(req: AnalyzeRequest):
     if not symbol:
         raise HTTPException(400, "Symbol is required")
 
-    # 1. Fetch display data
-    data = fetch_stock_data(symbol, period=req.period, interval=req.interval)
+    # 1. Fetch display data (always fetch extra for accurate indicator calc like MACD/EMA)
+    fetch_period = "6mo" if req.period in ["1d", "5d", "1mo", "3mo"] else req.period
+    data = fetch_stock_data(symbol, period=fetch_period, interval=req.interval)
     if data is None:
         raise HTTPException(404, f"No data found for {symbol}")
 
@@ -50,6 +51,13 @@ async def analyze_stock(req: AnalyzeRequest):
         data = data.sort_values('Date').drop_duplicates(subset=['Date']).dropna(subset=['Open', 'High', 'Low', 'Close'])
         
     featured = calculate_features(data)
+
+    # Slice data back to requested period length so the frontend chart matches what the user selected
+    slice_map = { "1d": 1, "5d": 5, "1wk": 5, "1mo": 22, "3mo": 66, "6mo": 130, "1y": 252 }
+    target_rows = slice_map.get(req.period)
+    if target_rows and len(data) > target_rows:
+        data = data.tail(target_rows)
+        featured = featured.tail(target_rows)
 
     # 5. Trading signals
     signals = generate_signals(featured)

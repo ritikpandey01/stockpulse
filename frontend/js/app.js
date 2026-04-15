@@ -1183,3 +1183,44 @@ document.addEventListener('DOMContentLoaded', () => {
         navigate('dashboard');
     }
 });
+
+document.addEventListener('DOMContentLoaded', () => {
+    checkAuth();
+    const connectBanner = document.getElementById('global-loading-banner');
+
+    if (connectBanner) {
+        const textEl = connectBanner.querySelector('.global-loading-text');
+        const hideBanner = () => {
+            connectBanner.classList.add('banner-hidden');
+            setTimeout(() => connectBanner.style.display = 'none', 800);
+        };
+
+        const checkHealth = async () => {
+            try {
+                // This is what checks if your Render server is finally awake
+                await api.get('/market/overview');
+                hideBanner();
+            } catch (err) {
+                if (textEl) textEl.textContent = '⚡ Wake up in progress (Render free tier)...';
+                // Try again every 3 seconds until it works
+                let retries = 0;
+                const interval = setInterval(async () => {
+                    retries++;
+                    try {
+                        await api.get('/market/overview');
+                        clearInterval(interval);
+                        hideBanner();
+                    } catch (e) {
+                        if (retries > 15) { // Force hide after 45s
+                            clearInterval(interval);
+                            hideBanner();
+                        }
+                    }
+                }, 3000);
+            }
+        };
+        checkHealth();
+    }
+    // ... search box keydown logic goes here ...
+});
+
